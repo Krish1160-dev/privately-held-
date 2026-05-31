@@ -1,11 +1,12 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  BookOpen, Building2, Calendar, Clock, Users, Search,
+  BookOpen, Building2, Users, Search,
   Shield, Award, GraduationCap, UserCheck, Bell, X,
-  ChevronRight, Landmark, FlaskConical, Banknote,
+  ChevronRight, FlaskConical, Banknote,
 } from "lucide-react";
 import { exams, type Exam } from "@/data/exams";
+import ExamDetailModal from "@/components/ExamDetailModal";
 
 /* ── types ─────────────────────────────────────────────────── */
 type Level  = "all" | "state" | "national";
@@ -102,7 +103,7 @@ function FilterChip({
 }
 
 /* ── exam card ─────────────────────────────────────────────── */
-function ExamCard({ exam }: { exam: Exam }) {
+function ExamCard({ exam, onOpen }: { exam: Exam; onOpen: (e: Exam) => void }) {
   const isDeadlineSoon =
     exam.status === "open" && !exam.applicationDeadline.includes("Closed");
 
@@ -113,7 +114,8 @@ function ExamCard({ exam }: { exam: Exam }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.25 }}
-      className="bg-card rounded-2xl border border-card-border hover:shadow-lg hover:border-primary/25 transition-all duration-200 flex flex-col overflow-hidden"
+      onClick={() => onOpen(exam)}
+      className="bg-card rounded-2xl border border-card-border hover:shadow-lg hover:border-primary/25 transition-all duration-200 flex flex-col overflow-hidden cursor-pointer group"
       data-testid={`exam-card-${exam.id}`}
     >
       {/* card header stripe */}
@@ -202,16 +204,17 @@ function ExamCard({ exam }: { exam: Exam }) {
             {exam.officialWebsite}
           </a>
           <button
+            onClick={(e) => { e.stopPropagation(); onOpen(exam); }}
             data-testid={`exam-view-details-${exam.id}`}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-150 ${
               exam.status === "open"
                 ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
                 : exam.status === "upcoming"
                 ? "border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                : "bg-muted text-muted-foreground cursor-default"
+                : "bg-muted text-muted-foreground hover:bg-slate-200"
             }`}
           >
-            {exam.status === "results" ? "View Result" : "Apply Now"}
+            View Details
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -228,6 +231,7 @@ export default function Exams() {
   const [level, setLevel]           = useState<Level>("all");
   const [status, setStatus]         = useState<Status>("all");
   const [category, setCategory]     = useState<Category>("all");
+  const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
 
   /* counts for chips */
   const counts = useMemo(() => ({
@@ -265,6 +269,7 @@ export default function Exams() {
   }
 
   return (
+    <>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-testid="exams-page">
 
       {/* ── page header ── */}
@@ -400,7 +405,7 @@ export default function Exams() {
             className="grid grid-cols-1 md:grid-cols-2 gap-5"
           >
             {filtered.map((exam) => (
-              <ExamCard key={exam.id} exam={exam} />
+              <ExamCard key={exam.id} exam={exam} onOpen={setSelectedExam} />
             ))}
           </motion.div>
         )}
@@ -424,5 +429,9 @@ export default function Exams() {
         </div>
       )}
     </div>
+
+    {/* ── modal ── */}
+    <ExamDetailModal exam={selectedExam} onClose={() => setSelectedExam(null)} />
+    </>
   );
 }
