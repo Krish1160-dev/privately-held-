@@ -2,6 +2,7 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import ScrollToTop from "./ScrollToTop";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,6 +24,7 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <ScrollToTop />
       <Navbar />
       <AnimatePresence mode="wait" initial={false}>
         <motion.main
