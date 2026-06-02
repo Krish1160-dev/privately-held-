@@ -41,6 +41,8 @@ export interface Exam {
   syllabus: SyllabusSection[];
   applicationProcess: ApplicationStep[];
   notificationPdf?: string;
+  applyUrl?: string;
+  resultsUrl?: string;
 }
 
 export const exams: Exam[] = [
