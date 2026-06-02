@@ -5,8 +5,10 @@ import {
   Users, GraduationCap, X, Building2, FlaskConical,
   Landmark, Shield, ChevronRight, ExternalLink, Bell,
   Link2Off, ArrowLeft, AlertCircle, Info, CalendarClock,
+  FileText,
 } from "lucide-react";
 import { jobs, type Job } from "@/data/jobs";
+import JobDetailModal from "@/components/JobDetailModal";
 
 /* ── types ──────────────────────────────────────────── */
 type Region = "all" | "state" | "national";
@@ -157,7 +159,11 @@ function PlaceholderOverlay({
 }
 
 /* ── job card ────────────────────────────────────────── */
-function JobCard({ job, onApply }: { job: Job; onApply: (j: Job) => void }) {
+function JobCard({ job, onApply, onViewDetails }: {
+  job: Job;
+  onApply: (j: Job) => void;
+  onViewDetails: (j: Job) => void;
+}) {
   const isClosed = job.lastDate === "Closed";
   const isDeadlineSoon = !isClosed && job.lastDate.includes("Jun 2025");
 
@@ -260,6 +266,13 @@ function JobCard({ job, onApply }: { job: Job; onApply: (j: Job) => void }) {
                 {job.officialWebsite}
               </a>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => onViewDetails(job)}
+                  data-testid={`job-details-${job.id}`}
+                  className="inline-flex items-center gap-1.5 border border-border text-foreground text-sm font-semibold px-4 py-2 rounded-xl hover:bg-muted transition-colors"
+                >
+                  <FileText className="w-3.5 h-3.5" /> Details
+                </button>
                 {!isClosed ? (
                   <button
                     onClick={() => onApply(job)}
@@ -292,10 +305,11 @@ function JobCard({ job, onApply }: { job: Job; onApply: (j: Job) => void }) {
    PAGE
 ══════════════════════════════════════════════════════ */
 export default function Jobs() {
-  const [search, setSearch]     = useState("");
-  const [region, setRegion]     = useState<Region>("all");
-  const [sector, setSector]     = useState<Sector>("all");
-  const [applyJob, setApplyJob] = useState<Job | null>(null);
+  const [search, setSearch]         = useState("");
+  const [region, setRegion]         = useState<Region>("all");
+  const [sector, setSector]         = useState<Sector>("all");
+  const [applyJob, setApplyJob]     = useState<Job | null>(null);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
   /* counts */
   const counts = useMemo(() => ({
@@ -447,7 +461,7 @@ export default function Jobs() {
         ) : (
           <motion.div key="list" className="space-y-4">
             {filtered.map((job) => (
-              <JobCard key={job.id} job={job} onApply={handleApply} />
+              <JobCard key={job.id} job={job} onApply={handleApply} onViewDetails={setSelectedJob} />
             ))}
           </motion.div>
         )}
@@ -482,6 +496,12 @@ export default function Jobs() {
         />
       )}
     </AnimatePresence>
+
+    {/* ── job detail modal ── */}
+    <JobDetailModal
+      job={selectedJob}
+      onClose={() => setSelectedJob(null)}
+    />
     </>
   );
 }
