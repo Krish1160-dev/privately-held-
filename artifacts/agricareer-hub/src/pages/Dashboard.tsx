@@ -84,9 +84,10 @@ function deadlinePillColor(deadline: string) {
   return "bg-amber-100 text-amber-700";
 }
 
-function typePillColor(type: "govt" | "private" | "ngo") {
-  if (type === "govt")    return "bg-sky-100 text-sky-700";
-  if (type === "ngo")     return "bg-violet-100 text-violet-700";
+function typePillColor(type: "govt" | "private" | "ngo" | "research") {
+  if (type === "govt")     return "bg-sky-100 text-sky-700";
+  if (type === "ngo")      return "bg-violet-100 text-violet-700";
+  if (type === "research") return "bg-teal-100 text-teal-700";
   return "bg-orange-100 text-orange-700";
 }
 
@@ -373,11 +374,11 @@ export default function Dashboard() {
                 <WidgetRow
                   key={job.id}
                   title={job.title}
-                  subtitle={job.company}
+                  subtitle={job.organization}
                   right={
                     <div className="flex flex-col items-end gap-1">
-                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${typePillColor(job.type)}`}>
-                        {job.type === "govt" ? "Govt" : job.type === "ngo" ? "NGO" : "Private"}
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${typePillColor(job.sector)}`}>
+                        {job.sector === "govt" ? "Govt" : job.sector === "ngo" ? "NGO" : job.sector === "research" ? "Research" : "Private"}
                       </span>
                       <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
                         <MapPin className="w-3 h-3" />
@@ -452,15 +453,17 @@ export default function Dashboard() {
                   subtitle={item.source}
                   meta={item.date}
                   pill={
-                    item.category === "policy"     ? "Policy"
-                    : item.category === "scheme"   ? "Scheme"
-                    : item.category === "technology" ? "Technology"
-                    : "Market"
+                    item.category === "tn-updates"       ? "TN Update"
+                    : item.category === "national-updates" ? "National"
+                    : item.category === "recruitment"    ? "Recruitment"
+                    : item.category === "research"       ? "Research"
+                    : "Scholarship"
                   }
                   pillColor={
-                    item.category === "policy"     ? "bg-violet-100 text-violet-700"
-                    : item.category === "scheme"   ? "bg-green-100 text-green-700"
-                    : item.category === "technology" ? "bg-sky-100 text-sky-700"
+                    item.category === "tn-updates"         ? "bg-green-100 text-green-700"
+                    : item.category === "national-updates" ? "bg-sky-100 text-sky-700"
+                    : item.category === "recruitment"      ? "bg-violet-100 text-violet-700"
+                    : item.category === "research"         ? "bg-teal-100 text-teal-700"
                     : "bg-amber-100 text-amber-700"
                   }
                   right={
