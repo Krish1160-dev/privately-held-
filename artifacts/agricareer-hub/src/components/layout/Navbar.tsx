@@ -3,8 +3,9 @@ import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, BookOpen, Briefcase, Newspaper,
-  TrendingUp, Sprout, Menu, X, Bell, ChevronRight
+  TrendingUp, Sprout, Menu, X, Bell, ChevronRight,
 } from "lucide-react";
+import { initialAlerts } from "@/data/alerts";
 
 const navLinks = [
   { label: "Dashboard",    href: "/",        icon: LayoutDashboard },
@@ -13,6 +14,8 @@ const navLinks = [
   { label: "News",         href: "/news",     icon: Newspaper       },
   { label: "Career Paths", href: "/careers",  icon: TrendingUp      },
 ];
+
+const unreadCount = initialAlerts.filter((a) => !a.isRead).length;
 
 function useScrolled(threshold = 8) {
   const [scrolled, setScrolled] = useState(false);
@@ -30,7 +33,6 @@ export default function Navbar() {
   const scrolled = useScrolled();
   const navRef = useRef<HTMLDivElement>(null);
 
-  /* close mobile menu on outside click */
   useEffect(() => {
     if (!menuOpen) return;
     const handler = (e: MouseEvent) => {
@@ -42,7 +44,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, [menuOpen]);
 
-  /* lock body scroll when mobile menu is open */
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -51,6 +52,8 @@ export default function Navbar() {
   function isActive(href: string) {
     return href === "/" ? location === "/" : location.startsWith(href);
   }
+
+  const alertsActive = location.startsWith("/alerts");
 
   return (
     <nav
@@ -61,10 +64,10 @@ export default function Navbar() {
       }`}
     >
       {/* Top accent stripe */}
-      <div className="h-0.5 bg-gradient-to-r from-primary via-primary/70 to-accent" />
+      <div className="h-0.5 bg-gradient-to-r from-primary via-primary/70 to-amber-500" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-15">
+        <div className="flex items-center justify-between h-16">
 
           {/* ── Logo ── */}
           <Link href="/" data-testid="nav-logo" className="flex items-center gap-3 group shrink-0 py-4">
@@ -72,12 +75,8 @@ export default function Navbar() {
               <Sprout className="w-5 h-5 text-primary-foreground" />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="font-extrabold text-foreground text-[15px] tracking-tight leading-none">
-                AgriCareer
-              </span>
-              <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-0.5">
-                Hub · Tamil Nadu
-              </span>
+              <span className="font-extrabold text-foreground text-[15px] tracking-tight leading-none">AgriCareer</span>
+              <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mt-0.5">Hub · Tamil Nadu</span>
             </div>
           </Link>
 
@@ -91,27 +90,12 @@ export default function Navbar() {
                   href={href}
                   data-testid={`nav-link-${label.toLowerCase().replace(/\s+/g, "-")}`}
                   className={`relative group flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${
-                    active
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
+                    active ? "text-primary" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {/* hover / active bg pill */}
-                  <span
-                    className={`absolute inset-0 rounded-lg transition-colors duration-150 ${
-                      active
-                        ? "bg-primary/10"
-                        : "group-hover:bg-muted"
-                    }`}
-                  />
-                  <Icon
-                    className={`relative z-10 w-4 h-4 transition-transform duration-150 group-hover:scale-110 ${
-                      active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                    }`}
-                  />
+                  <span className={`absolute inset-0 rounded-lg transition-colors duration-150 ${active ? "bg-primary/10" : "group-hover:bg-muted"}`} />
+                  <Icon className={`relative z-10 w-4 h-4 transition-transform duration-150 group-hover:scale-110 ${active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`} />
                   <span className="relative z-10">{label}</span>
-
-                  {/* active underline indicator */}
                   {active && (
                     <motion.span
                       layoutId="nav-active-indicator"
@@ -126,26 +110,33 @@ export default function Navbar() {
 
           {/* ── Right actions ── */}
           <div className="flex items-center gap-2">
-            {/* Notification bell */}
-            <button
+            {/* Notification bell → /alerts */}
+            <Link
+              href="/alerts"
               data-testid="nav-notifications"
-              aria-label="Notifications"
-              className="hidden sm:flex relative items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              aria-label="Alert Center"
+              className={`hidden sm:flex relative items-center justify-center w-9 h-9 rounded-lg transition-colors ${
+                alertsActive ? "bg-amber-100 text-amber-700" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
             >
-              <Bell className="w-4.5 h-4.5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full ring-2 ring-card" />
-            </button>
+              <Bell className="w-[18px] h-[18px]" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full px-1 ring-2 ring-card">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </Link>
 
-            {/* CTA — desktop */}
-            <a
-              href="#"
+            {/* CTA → /alerts — desktop */}
+            <Link
+              href="/alerts"
               data-testid="nav-cta"
               className="hidden lg:inline-flex items-center gap-1.5 bg-primary text-primary-foreground text-sm font-semibold px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors shadow-sm hover:shadow-md"
             >
               Get Alerts <ChevronRight className="w-3.5 h-3.5" />
-            </a>
+            </Link>
 
-            {/* Hamburger — mobile / tablet */}
+            {/* Hamburger */}
             <button
               className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               onClick={() => setMenuOpen((o) => !o)}
@@ -169,27 +160,20 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ── Mobile / tablet drawer ── */}
+      {/* ── Mobile drawer ── */}
       <AnimatePresence>
         {menuOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="lg:hidden fixed inset-0 top-[calc(3.75rem+2px)] bg-foreground/20 backdrop-blur-sm z-40"
+              className="lg:hidden fixed inset-0 top-[calc(4rem+2px)] bg-foreground/20 backdrop-blur-sm z-40"
               onClick={() => setMenuOpen(false)}
             />
-
-            {/* Panel */}
             <motion.div
               key="panel"
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="lg:hidden absolute top-full left-0 right-0 z-50 bg-card border-b border-border shadow-xl"
               data-testid="nav-mobile-menu"
@@ -209,37 +193,59 @@ export default function Navbar() {
                         onClick={() => setMenuOpen(false)}
                         data-testid={`nav-mobile-link-${label.toLowerCase().replace(/\s+/g, "-")}`}
                         className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                          active
-                            ? "bg-primary/10 text-primary"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                         }`}
                       >
-                        <span className={`flex items-center justify-center w-8 h-8 rounded-lg ${
-                          active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                        }`}>
+                        <span className={`flex items-center justify-center w-8 h-8 rounded-lg ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
                           <Icon className="w-4 h-4" />
                         </span>
                         <div className="flex-1">
                           <div className={active ? "font-semibold" : ""}>{label}</div>
                         </div>
-                        {active && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                        )}
+                        {active && <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
                       </Link>
                     </motion.div>
                   );
                 })}
 
+                {/* Alerts link */}
+                <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: navLinks.length * 0.04, duration: 0.2 }}>
+                  <Link
+                    href="/alerts"
+                    onClick={() => setMenuOpen(false)}
+                    data-testid="nav-mobile-link-alerts"
+                    className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                      alertsActive ? "bg-amber-100 text-amber-700" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <span className={`flex items-center justify-center w-8 h-8 rounded-lg relative ${alertsActive ? "bg-amber-500 text-white" : "bg-muted text-muted-foreground"}`}>
+                      <Bell className="w-4 h-4" />
+                      {unreadCount > 0 && !alertsActive && (
+                        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </span>
+                    <div className="flex-1 flex items-center gap-2">
+                      <span className={alertsActive ? "font-semibold" : ""}>Alert Center</span>
+                      {unreadCount > 0 && (
+                        <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">{unreadCount} new</span>
+                      )}
+                    </div>
+                  </Link>
+                </motion.div>
+
                 {/* Mobile CTA */}
                 <div className="pt-2 mt-2 border-t border-border">
-                  <a
-                    href="#"
+                  <Link
+                    href="/alerts"
+                    onClick={() => setMenuOpen(false)}
                     data-testid="nav-mobile-cta"
                     className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground text-sm font-semibold py-3 rounded-xl hover:bg-primary/90 transition-colors"
                   >
                     <Bell className="w-4 h-4" />
                     Get Exam & Job Alerts
-                  </a>
+                  </Link>
                 </div>
               </div>
             </motion.div>

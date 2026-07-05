@@ -8,6 +8,7 @@ import Exams from "@/pages/Exams";
 import Jobs from "@/pages/Jobs";
 import News from "@/pages/News";
 import Careers from "@/pages/Careers";
+import Alerts from "@/pages/Alerts";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ function Router() {
         <Route path="/jobs" component={Jobs} />
         <Route path="/news" component={News} />
         <Route path="/careers" component={Careers} />
+        <Route path="/alerts" component={Alerts} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
