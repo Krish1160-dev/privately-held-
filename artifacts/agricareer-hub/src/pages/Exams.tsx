@@ -131,6 +131,7 @@ function ExamCard({ exam, onOpen }: { exam: Exam; onOpen: (e: Exam) => void }) {
           <div className="flex flex-wrap gap-1.5">
             <LevelBadge level={exam.level} />
             <CategoryBadge category={exam.category} />
+            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-full">Sample</span>
           </div>
           <StatusBadge status={exam.status} />
         </div>

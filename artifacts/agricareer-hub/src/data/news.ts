@@ -1,3 +1,5 @@
+export const IS_SAMPLE_DATA = true as const;
+
 export type NewsCategory =
   | "tn-updates"
   | "national-updates"

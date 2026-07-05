@@ -95,6 +95,7 @@ function NewsCard({ item }: { item: NewsItem }) {
             <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${cat.badge}`}>
               <Icon className="w-3 h-3" /> {cat.label}
             </span>
+            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-full">Sample</span>
             {item.isNew && (
               <span className="bg-primary text-primary-foreground text-[10px] font-extrabold px-2 py-0.5 rounded-full tracking-wide">
                 NEW

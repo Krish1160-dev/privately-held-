@@ -28,7 +28,10 @@ export interface Job {
   tags: string[];
   officialWebsite: string;
   applyUrl?: string;
+  isSample?: boolean;
 }
+
+export const IS_SAMPLE_DATA = true as const;
 
 export const jobs: Job[] = [
   {

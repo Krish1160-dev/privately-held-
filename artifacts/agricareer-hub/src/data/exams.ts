@@ -43,7 +43,10 @@ export interface Exam {
   notificationPdf?: string;
   applyUrl?: string;
   resultsUrl?: string;
+  isSample?: boolean;
 }
+
+export const IS_SAMPLE_DATA = true as const;
 
 export const exams: Exam[] = [
   {
@@ -647,59 +650,6 @@ export const exams: Exam[] = [
       { step: 2, title: "Select Post Code", description: "Choose the appropriate technician post code matching your discipline (T-1 to T-6 based on specialization and education level)." },
       { step: 3, title: "Upload Documents", description: "Upload degree certificate, marksheets, community certificate, and passport photo/signature in specified formats." },
       { step: 4, title: "Pay & Submit", description: "SC/ST/PwD/Women candidates are exempt from fee. Others pay ₹500 online. Download confirmation receipt after submission." },
-    ],
-    notificationPdf: "#",
-  },
-  {
-    id: 11,
-    name: "Kerala PSC Agricultural Assistant 2025",
-    shortName: "KPSC Agri Asst",
-    conductingBody: "Kerala Public Service Commission",
-    level: "state",
-    status: "upcoming",
-    notificationDate: "1 Jun 2025",
-    applicationDeadline: "20 Aug 2025",
-    examDate: "15 Nov 2025",
-    resultDate: "Feb 2026 (expected)",
-    eligibility: "B.Sc Agriculture from a recognised university",
-    eligibilityDetails: [
-      "B.Sc Agriculture from any University recognised by Kerala Government",
-      "Must be a Kerala domicile",
-      "Proficiency in Malayalam is essential",
-      "No minimum percentage specified; merit list based on exam score",
-    ],
-    ageLimit: "18 – 36 years (SC/ST candidates: no upper age limit)",
-    description: "Agricultural Assistant Grade II posts under Kerala Agriculture Department — village-level extension officers supporting farmers with crop selection and subsidy access.",
-    vacancies: 195,
-    category: "recruitment",
-    officialWebsite: "keralapsc.gov.in",
-    applicationFee: "₹0 (all candidates — Kerala PSC does not charge application fee)",
-    examPattern: {
-      mode: "OMR-based Objective Written Test",
-      duration: "1.5 hours",
-      totalMarks: 100,
-      sections: [
-        { name: "Agriculture (Core)", questions: 60, marks: 60 },
-        { name: "General Knowledge & Current Affairs (Kerala focus)", questions: 40, marks: 40 },
-      ],
-      negativeMarking: "1/3 mark deducted per wrong answer",
-      medium: "Malayalam & English",
-    },
-    syllabus: [
-      {
-        subject: "Core Agriculture",
-        topics: ["Kerala-specific crops (rubber, coconut, pepper)", "Paddy cultivation in Kerala", "Soil types in Kerala", "Minor irrigation structures", "Organic farming in Kerala context"],
-      },
-      {
-        subject: "Kerala Current Affairs & GK",
-        topics: ["Kerala government schemes", "State geography & rivers", "Kerala agriculture statistics", "National & international current events"],
-      },
-    ],
-    applicationProcess: [
-      { step: 1, title: "Register on Kerala PSC Thulasi Portal", description: "Visit thulasi.psc.kerala.gov.in and complete One Time Registration (OTR). All Kerala PSC exams use this single portal." },
-      { step: 2, title: "Apply for the Notification", description: "After OTR, log in and find the Agricultural Assistant notification. No fee to pay — Kerala PSC is free for all candidates." },
-      { step: 3, title: "Select District Preferences", description: "Choose your district preferences for posting. Selections made here influence your future posting if selected." },
-      { step: 4, title: "Submit & Await Admit Card", description: "Submit application and keep your candidate ID safe. Admit card will be released 2 weeks before exam date on the Thulasi portal." },
     ],
     notificationPdf: "#",
   },

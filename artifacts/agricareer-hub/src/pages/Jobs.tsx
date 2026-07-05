@@ -209,6 +209,7 @@ function JobCard({ job, onApply, onViewDetails }: {
               <div className="flex flex-wrap items-center gap-1.5">
                 <RegionBadge region={job.region} />
                 <SectorBadge sector={job.sector} />
+                <span className="text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-full">Sample</span>
                 {isClosed && (
                   <span className="text-xs font-bold bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full border border-slate-200">
                     Closed
