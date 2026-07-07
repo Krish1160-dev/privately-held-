@@ -5,10 +5,13 @@ import {
   Users, GraduationCap, X, Building2, FlaskConical,
   Landmark, Shield, ChevronRight, ExternalLink, Bell,
   Link2Off, ArrowLeft, AlertCircle, Info, CalendarClock,
-  FileText,
+  FileText, Archive, ChevronDown,
 } from "lucide-react";
 import { jobs, type Job } from "@/data/jobs";
 import JobDetailModal from "@/components/JobDetailModal";
+import DataFreshnessBar from "@/components/shared/DataFreshnessBar";
+import { SourceBadge } from "@/components/shared/SourceBadge";
+import { partitionByExpiry } from "@/lib/freshness";
 
 /* ── types ──────────────────────────────────────────── */
 type Region = "all" | "state" | "national";
@@ -258,14 +261,7 @@ function JobCard({ job, onApply, onViewDetails }: {
 
             {/* footer */}
             <div className="flex items-center justify-between gap-3 pt-1 border-t border-border">
-              <a
-                href={`https://${job.officialWebsite}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-muted-foreground hover:text-primary transition-colors"
-              >
-                {job.officialWebsite}
-              </a>
+              <SourceBadge officialWebsite={job.officialWebsite} />
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onViewDetails(job)}
@@ -311,22 +307,27 @@ export default function Jobs() {
   const [sector, setSector]         = useState<Sector>("all");
   const [applyJob, setApplyJob]     = useState<Job | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
+
+  /* Separate active jobs from closed listings (last date passed) */
+  const { active: activeJobs, archived: archivedJobs } = useMemo(() =>
+    partitionByExpiry(jobs, (job) => job.lastDate), []);
 
   /* counts */
   const counts = useMemo(() => ({
-    state:    jobs.filter((j) => j.region === "state").length,
-    national: jobs.filter((j) => j.region === "national").length,
-    govt:     jobs.filter((j) => j.sector === "govt").length,
-    private:  jobs.filter((j) => j.sector === "private").length,
-    ngo:      jobs.filter((j) => j.sector === "ngo").length,
-    research: jobs.filter((j) => j.sector === "research").length,
-  }), []);
+    state:    activeJobs.filter((j) => j.region === "state").length,
+    national: activeJobs.filter((j) => j.region === "national").length,
+    govt:     activeJobs.filter((j) => j.sector === "govt").length,
+    private:  activeJobs.filter((j) => j.sector === "private").length,
+    ngo:      activeJobs.filter((j) => j.sector === "ngo").length,
+    research: activeJobs.filter((j) => j.sector === "research").length,
+  }), [activeJobs]);
 
-  const totalVacancies = useMemo(() => jobs.reduce((s, j) => s + j.vacancies, 0), []);
+  const totalVacancies = useMemo(() => activeJobs.reduce((s, j) => s + j.vacancies, 0), [activeJobs]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return jobs.filter((job) => {
+    return activeJobs.filter((job) => {
       if (region !== "all" && job.region !== region) return false;
       if (sector !== "all" && job.sector !== sector) return false;
       if (q &&
@@ -337,7 +338,7 @@ export default function Jobs() {
         !job.tags.some((t) => t.toLowerCase().includes(q))) return false;
       return true;
     });
-  }, [search, region, sector]);
+  }, [search, region, sector, activeJobs]);
 
   const activeFilters = [region !== "all", sector !== "all", search !== ""].filter(Boolean).length;
 
@@ -370,9 +371,9 @@ export default function Jobs() {
       </div>
 
       {/* ── stat strip ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {[
-          { label: "Total Listings",   value: jobs.length,              color: "text-foreground"  },
+          { label: "Active Listings",  value: activeJobs.length,        color: "text-foreground"  },
           { label: "Total Vacancies",  value: `${totalVacancies.toLocaleString("en-IN")}+`, color: "text-green-600" },
           { label: "Govt / Banking",   value: counts.govt,              color: "text-sky-600"    },
           { label: "Research / NGO",   value: counts.research + counts.ngo, color: "text-teal-600" },
@@ -383,6 +384,9 @@ export default function Jobs() {
           </div>
         ))}
       </div>
+
+      {/* ── freshness bar ── */}
+      <DataFreshnessBar sectionId="jobs" className="mb-7" />
 
       {/* ── search ── */}
       <div className="relative mb-5">
@@ -467,6 +471,59 @@ export default function Jobs() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── closed / archived jobs ── */}
+      {archivedJobs.length > 0 && (
+        <div className="mt-8">
+          <button
+            onClick={() => setShowArchived((p) => !p)}
+            className="w-full flex items-center justify-between gap-3 px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors text-left"
+          >
+            <div className="flex items-center gap-2.5">
+              <Archive className="w-4 h-4 text-slate-500" />
+              <span className="text-sm font-semibold text-slate-600">Closed Listings</span>
+              <span className="text-[11px] font-bold bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full">
+                {archivedJobs.length}
+              </span>
+              <span className="text-[11px] text-slate-400">— application window has passed</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+              <span>{showArchived ? "Hide" : "Show"}</span>
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showArchived ? "rotate-180" : ""}`} />
+            </div>
+          </button>
+          {showArchived && (
+            <div className="mt-3 space-y-3">
+              {archivedJobs.map((job) => (
+                <div
+                  key={job.id}
+                  className="relative bg-slate-50 border border-slate-200 rounded-2xl p-4 opacity-75 flex items-start justify-between gap-4"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <span className="text-[10px] font-bold bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        Closed
+                      </span>
+                      <SectorBadge sector={job.sector} />
+                    </div>
+                    <p className="font-semibold text-foreground text-sm mt-1">{job.title}</p>
+                    <p className="text-xs text-muted-foreground">{job.organization}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Last date: {job.lastDate}</p>
+                  </div>
+                  <a
+                    href={`https://${job.officialWebsite}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 text-xs text-primary hover:underline whitespace-nowrap"
+                  >
+                    Official site →
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── alert strip ── */}
       {filtered.length > 0 && (

@@ -8,6 +8,7 @@ import {
   Dot,
 } from "lucide-react";
 import { newsItems, notifications, type NewsItem, type NewsCategory } from "@/data/news";
+import DataFreshnessBar from "@/components/shared/DataFreshnessBar";
 
 /* ── category config ──────────────────────────────── */
 type CategoryKey = NewsCategory | "all";
@@ -330,7 +331,7 @@ export default function News() {
       </div>
 
       {/* ── stat strip ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {[
           { label: "Total Articles",   value: newsItems.length,                                     color: "text-foreground"   },
           { label: "Tamil Nadu",       value: counts["tn-updates"],                                  color: "text-emerald-600"  },
@@ -343,6 +344,9 @@ export default function News() {
           </div>
         ))}
       </div>
+
+      {/* ── freshness bar ── */}
+      <DataFreshnessBar sectionId="news" className="mb-7" />
 
       {/* ── search ── */}
       <div className="relative mb-5">

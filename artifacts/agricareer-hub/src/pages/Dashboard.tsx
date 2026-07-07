@@ -11,6 +11,7 @@ import { exams } from "@/data/exams";
 import { jobs } from "@/data/jobs";
 import { newsItems, notifications } from "@/data/news";
 import { WidgetCard, WidgetRow, WidgetEmpty } from "@/components/widgets/WidgetCard";
+import DataFreshnessBar from "@/components/shared/DataFreshnessBar";
 
 /* ── helpers ───────────────────────────────────────────────────── */
 const fadeUp = (delay = 0) => ({
@@ -241,6 +242,11 @@ export default function Dashboard() {
           ))}
         </motion.div>
       </section>
+
+      {/* ══════════════════ DATA FRESHNESS ══════════════════ */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <DataFreshnessBar sectionId="exams" className="mb-3" />
+      </div>
 
       {/* ══════════════════ QUICK ACCESS ══════════════════ */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">

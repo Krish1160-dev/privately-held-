@@ -1,0 +1,1 @@
+- [AgriCareer Hub data layer](agricareer-hub-data-layer.md) — scalable static-first architecture; single file to update for content refresh; API-ready switch.

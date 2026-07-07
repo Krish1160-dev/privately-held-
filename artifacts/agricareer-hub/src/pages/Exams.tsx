@@ -3,10 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen, Building2, Users, Search,
   Shield, Award, GraduationCap, UserCheck, Bell, X,
-  ChevronRight, FlaskConical, Banknote,
+  ChevronRight, FlaskConical, Banknote, Archive, ChevronDown,
 } from "lucide-react";
 import { exams, type Exam } from "@/data/exams";
 import ExamDetailModal from "@/components/ExamDetailModal";
+import DataFreshnessBar from "@/components/shared/DataFreshnessBar";
+import { SourceBadge } from "@/components/shared/SourceBadge";
+import { partitionByExpiry } from "@/lib/freshness";
 
 /* ── types ─────────────────────────────────────────────────── */
 type Level  = "all" | "state" | "national";
@@ -195,15 +198,7 @@ function ExamCard({ exam, onOpen }: { exam: Exam; onOpen: (e: Exam) => void }) {
 
         {/* footer */}
         <div className="mt-auto flex items-center justify-between gap-3 pt-1">
-          <a
-            href={`https://${exam.officialWebsite}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-            data-testid={`exam-website-${exam.id}`}
-          >
-            {exam.officialWebsite}
-          </a>
+          <SourceBadge officialWebsite={exam.officialWebsite} />
           <button
             onClick={(e) => { e.stopPropagation(); onOpen(exam); }}
             data-testid={`exam-view-details-${exam.id}`}
@@ -233,23 +228,31 @@ export default function Exams() {
   const [status, setStatus]         = useState<Status>("all");
   const [category, setCategory]     = useState<Category>("all");
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
+
+  /* Separate active exams from archived (application deadline passed + not still upcoming/results) */
+  const { active: activeExams, archived: archivedExams } = useMemo(() =>
+    partitionByExpiry(exams, (exam) => {
+      if (exam.status === "upcoming" || exam.status === "results") return undefined;
+      return exam.applicationDeadline;
+    }), []);
 
   /* counts for chips */
   const counts = useMemo(() => ({
-    state:       exams.filter((e) => e.level === "state").length,
-    national:    exams.filter((e) => e.level === "national").length,
-    open:        exams.filter((e) => e.status === "open").length,
-    upcoming:    exams.filter((e) => e.status === "upcoming").length,
-    results:     exams.filter((e) => e.status === "results").length,
-    entrance:    exams.filter((e) => e.category === "entrance").length,
-    recruitment: exams.filter((e) => e.category === "recruitment").length,
-    fellowship:  exams.filter((e) => e.category === "fellowship").length,
-    banking:     exams.filter((e) => e.category === "banking").length,
-  }), []);
+    state:       activeExams.filter((e) => e.level === "state").length,
+    national:    activeExams.filter((e) => e.level === "national").length,
+    open:        activeExams.filter((e) => e.status === "open").length,
+    upcoming:    activeExams.filter((e) => e.status === "upcoming").length,
+    results:     activeExams.filter((e) => e.status === "results").length,
+    entrance:    activeExams.filter((e) => e.category === "entrance").length,
+    recruitment: activeExams.filter((e) => e.category === "recruitment").length,
+    fellowship:  activeExams.filter((e) => e.category === "fellowship").length,
+    banking:     activeExams.filter((e) => e.category === "banking").length,
+  }), [activeExams]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return exams.filter((exam) => {
+    return activeExams.filter((exam) => {
       if (level !== "all" && exam.level !== level) return false;
       if (status !== "all" && exam.status !== status) return false;
       if (category !== "all" && exam.category !== category) return false;
@@ -259,7 +262,7 @@ export default function Exams() {
                !exam.eligibility.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [search, level, status, category]);
+  }, [search, level, status, category, activeExams]);
 
   const activeFilterCount = [
     level !== "all", status !== "all", category !== "all", search !== "",
@@ -289,12 +292,12 @@ export default function Exams() {
       </div>
 
       {/* ── summary stat strip ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {[
-          { label: "Total Exams",    value: exams.length,     color: "text-foreground" },
-          { label: "Currently Open", value: counts.open,      color: "text-green-600"  },
-          { label: "Upcoming",       value: counts.upcoming,  color: "text-amber-600"  },
-          { label: "Results Out",    value: counts.results,   color: "text-slate-500"  },
+          { label: "Active Exams",   value: activeExams.length,   color: "text-foreground" },
+          { label: "Currently Open", value: counts.open,           color: "text-green-600"  },
+          { label: "Upcoming",       value: counts.upcoming,       color: "text-amber-600"  },
+          { label: "Results Out",    value: counts.results,        color: "text-slate-500"  },
         ].map((s) => (
           <div key={s.label} className="bg-card rounded-xl border border-card-border px-4 py-3 text-center">
             <div className={`text-2xl font-extrabold ${s.color}`}>{s.value}</div>
@@ -302,6 +305,9 @@ export default function Exams() {
           </div>
         ))}
       </div>
+
+      {/* ── freshness bar ── */}
+      <DataFreshnessBar sectionId="exams" className="mb-7" />
 
       {/* ── search ── */}
       <div className="relative mb-5">
@@ -411,6 +417,59 @@ export default function Exams() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── archived exams ── */}
+      {archivedExams.length > 0 && (
+        <div className="mt-8">
+          <button
+            onClick={() => setShowArchived((p) => !p)}
+            className="w-full flex items-center justify-between gap-3 px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors text-left"
+          >
+            <div className="flex items-center gap-2.5">
+              <Archive className="w-4 h-4 text-slate-500" />
+              <span className="text-sm font-semibold text-slate-600">
+                Archived Exams
+              </span>
+              <span className="text-[11px] font-bold bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full">
+                {archivedExams.length}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+              <span>{showArchived ? "Hide" : "Show"}</span>
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showArchived ? "rotate-180" : ""}`} />
+            </div>
+          </button>
+          {showArchived && (
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {archivedExams.map((exam) => (
+                <div
+                  key={exam.id}
+                  className="relative bg-slate-50 border border-slate-200 rounded-2xl p-5 opacity-75"
+                >
+                  <div className="absolute top-3 right-3 text-[10px] font-bold bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Archived
+                  </div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
+                    {exam.conductingBody}
+                  </p>
+                  <p className="font-semibold text-foreground text-sm">{exam.name}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Application deadline: {exam.applicationDeadline}
+                  </p>
+                  <a
+                    href={`https://${exam.officialWebsite}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline mt-2 inline-block"
+                  >
+                    Check official site for updates →
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── bottom alert strip ── */}
       {filtered.length > 0 && (
