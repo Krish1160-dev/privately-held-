@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Briefcase, Search, MapPin, IndianRupee, Calendar,
@@ -302,12 +303,24 @@ function JobCard({ job, onApply, onViewDetails }: {
    PAGE
 ══════════════════════════════════════════════════════ */
 export default function Jobs() {
-  const [search, setSearch]         = useState("");
+  const [location] = useLocation();
+  const [search, setSearch]         = useState(() => {
+    if (typeof window === "undefined") return "";
+    const q = new URLSearchParams(window.location.search).get("q");
+    return q ?? "";
+  });
   const [region, setRegion]         = useState<Region>("all");
   const [sector, setSector]         = useState<Sector>("all");
   const [applyJob, setApplyJob]     = useState<Job | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+
+  /* Sync search from the ?q= query param whenever the URL changes
+     (e.g. Dashboard hero search → /jobs?q=...). */
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q") ?? "";
+    setSearch(q);
+  }, [location]);
 
   /* Separate active jobs from closed listings (last date passed) */
   const { active: activeJobs, archived: archivedJobs } = useMemo(() =>
