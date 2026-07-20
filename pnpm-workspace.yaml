@@ -33,6 +33,14 @@ minimumReleaseAgeExclude:
   # this setting guards against does not apply to our own packages.
   - '@replit/*'
   - stripe-replit-sync
+  # Core dependencies needed by workspace lib packages — exclude from
+  # release age check to avoid deployment failures when fresh patch versions
+  # are in the lockfile.
+  - '@types/node'
+  - drizzle-orm
+  - pg
+  - '@tanstack/react-query'
+  - zod
 
 packages:
   - artifacts/*
