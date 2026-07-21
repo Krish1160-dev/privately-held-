@@ -16,7 +16,7 @@
 # passed (e.g. an urgent security bugfix), you can add it to the
 # `minimumReleaseAgeExclude` allowlist below. Only consider doing this for
 # packages released by trusted organizations with an impeccable security
-# posture (e.g. Replit packsges, react from Meta, typescript from Microsoft). Even then,
+# posture (e.g. Replit packages, react from Meta, typescript from Microsoft). Even then,
 # remove the exclusion once the 1-day window has passed.
 #
 # Example:
@@ -37,7 +37,10 @@ minimumReleaseAgeExclude:
   # release age check to avoid deployment failures when fresh patch versions
   # are in the lockfile.
   - '@types/node'
+  - '@types/pg'
   - drizzle-orm
+  - drizzle-zod
+  - drizzle-kit
   - pg
   - '@tanstack/react-query'
   - zod
@@ -169,4 +172,4 @@ overrides:
   esbuild: "0.27.3"
 
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true
